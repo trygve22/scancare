@@ -1,36 +1,102 @@
-# ScanCare
+# ScanCare 📱
 
-En simpel start på ScanCare appen med 3 views (faner) via React Navigation:
 
-Faner:
-- Hjem (introduktion)
-- Søg (kommende søgefunktion til produkter)
-- Reviews (kommende produktanmeldelser)
 
-## Kom i gang
-Installer dependencies (hvis ikke allerede):
+Before installation, make sure you have:
+
+- **Node.js** (v16 eller nyere)
+- **npm** eller **yarn**
+- **Expo CLI**: `npm install -g @expo/cli`
+- **Expo Go app** på din telefon (iOS/Android)
+
+## ⚡ Installation & Setup
+
+### 1. Clone repository
+```bash
+git clone https://github.com/trygve22/scancare.git
+cd scancare
 ```
+
+### 2. Installer alle dependencies
+```bash
 npm install
 ```
-Start udviklingsserver:
-```
-npm start
-```
-Scan QR med Expo Go (iOS kamera / Android Expo Go app) eller tryk `i` / `a` / `w` i terminalen for simulator/web.
 
-## Struktur
-```
-App.js                Navigation container + Tab navigator
-screens/
-  HomeScreen.js
-  SearchScreen.js
-  ReviewsScreen.js
+### 3. Installer required navigation packages
+```bash
+npm install @react-navigation/native @react-navigation/bottom-tabs @react-navigation/stack
+npx expo install react-native-screens react-native-safe-area-context react-native-gesture-handler
 ```
 
-## Næste skridt (idéer)
-- Tilføj søgefelt og API kald til produktdatabase
-- Implementer kamera/barcode scanner (expo-barcode-scanner)
-- Tilføj state management (Zustand eller Redux) hvis nødvendigt
-- Gem favoritprodukter lokalt (AsyncStorage / SQLite)
+### 4. Installer camera functionality
+```bash
+npx expo install expo-camera
+```
+
+### 5. Start development server
+```bash
+npx expo start
+```
+
+### 6. Test på din enhed
+- **iOS**: Scan QR-koden med kamera appen
+- **Android**: Scan QR-koden med Expo Go appen
+- **Simulator**: Tryk `i` (iOS) eller `a` (Android) i terminalen
+
+## 📱 App Struktur
+
+```
+scancare/
+├── App.js                 # Navigation container + routing
+├── screens/
+│   ├── HomeScreen.js       # Hovedskærm med app oversigt
+│   ├── SearchScreen.js     # Produktsøgning med FlatList
+│   ├── ReviewScreen.js     # Produktanmeldelser
+│   ├── CameraScreen.js     # Kamera scanning interface
+│   └── ProductDetailScreen.js # Detaljeret produktvisning
+├── components/
+│   ├── Typography.js       # Genanvendelig tekst komponent
+│   └── ErrorBoundary.js    # Fejlhåndtering
+├── styles/
+│   ├── theme.js           # Farver og design tokens
+│   ├── ThemeContext.js    # Global tema management
+│   └── *.styles.js        # Screen-specifikke stylesheets
+└── data/
+    └── moisturizers.js    # Produktdatabase
+```
+
+
+### Common Issues
+
+**Kamera virker ikke:**
+```bash
+npx expo install expo-camera
+# Genstart Expo server
+npx expo start --clear
+```
+
+**Navigation fejl:**
+```bash
+npm install @react-navigation/stack react-native-gesture-handler
+npx expo start --clear
+```
+
+**Bundle fejl:**
+```bash
+# Clear cache og genstart
+npx expo start --clear
+```
+
+## 📞 Support
+
+For spørgsmål eller problemer, kontakt udviklerteamet eller opret en issue på GitHub repository.
+
+## 🎬 Demo Video
+
+[Link til demo video vil blive tilføjet her]
+
+---
+
+**ScanCare** - Din digitale hudpleje assistent 🧴✨
 
 

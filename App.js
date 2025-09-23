@@ -2,15 +2,64 @@ import React, { useMemo, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme as NavDefaultTheme, DarkTheme as NavDarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './styles/ThemeContext';
 
 import HomeScreen from './screens/HomeScreen';
 import SearchScreen from './screens/SearchScreen';
 import ReviewScreen from './screens/ReviewScreen';
+import CameraScreen from './screens/CameraScreen';
+import ProductDetailScreen from './screens/ProductDetailScreen';
 import ErrorBoundary from './components/ErrorBoundary';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Create stack navigator for screens that need stack navigation
+function MainStack() {
+  const { theme } = useTheme();
+  
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: theme.colors.background }
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Camera" component={CameraScreen} />
+      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Create tab navigator
+function MainTabs() {
+  const { theme } = useTheme();
+  
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: { backgroundColor: theme.colors.surfaceAlt || theme.colors.background, borderTopColor: theme.colors.border },
+        tabBarIcon: ({ color, size }) => {
+          let iconName = 'home';
+          if (route.name === 'Hjem') iconName = 'home';
+          else if (route.name === 'Søg') iconName = 'search';
+          else if (route.name === 'Reviews') iconName = 'chatbubbles';
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textMuted,
+      })}
+    >
+      <Tab.Screen name="Hjem" component={HomeScreen} />
+      <Tab.Screen name="Søg" component={SearchScreen} />
+      <Tab.Screen name="Reviews" component={ReviewScreen} />
+    </Tab.Navigator>
+  );
+}
 
 function ThemedNavigator() {
   const { theme, mode } = useTheme();
@@ -43,25 +92,7 @@ function ThemedNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarStyle: { backgroundColor: theme.colors.surfaceAlt || theme.colors.background, borderTopColor: theme.colors.border },
-          tabBarIcon: ({ color, size }) => {
-            let iconName = 'home';
-            if (route.name === 'Hjem') iconName = 'home';
-            else if (route.name === 'Søg') iconName = 'search';
-            else if (route.name === 'Reviews') iconName = 'chatbubbles';
-            return <Ionicons name={iconName} size={size} color={color} />;
-          },
-          tabBarActiveTintColor: theme.colors.primary,
-          tabBarInactiveTintColor: theme.colors.textMuted,
-        })}
-      >
-        <Tab.Screen name="Hjem" component={HomeScreen} />
-        <Tab.Screen name="Søg" component={SearchScreen} />
-        <Tab.Screen name="Reviews" component={ReviewScreen} />
-      </Tab.Navigator>
+      <MainStack />
     </NavigationContainer>
   );
 }

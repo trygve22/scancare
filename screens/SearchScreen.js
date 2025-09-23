@@ -1,25 +1,48 @@
 import React, { useMemo, useState } from 'react';
-import { View, SectionList, TouchableOpacity, TextInput } from 'react-native';
+import { View, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { makeStyles } from '../styles/SearchScreen.styles';
 import { useTheme } from '../styles/ThemeContext';
 import Typography from '../components/Typography';
 import { moisturizerSections } from '../data/moisturizers';
 
 export default function SearchScreen() {
+	const navigation = useNavigation();
 	const { theme } = useTheme();
 	const styles = useMemo(() => makeStyles(theme), [theme]);
 	const [query, setQuery] = useState('');
 	const [selected, setSelected] = useState(null);
 
+	// Flet sektioner til en flad liste af produkter
+	const flatProducts = useMemo(() => {
+		return moisturizerSections.flatMap(section => 
+			section.data.map(product => ({
+				name: product,
+				category: section.title,
+				id: `${section.title}-${product}`
+			}))
+		);
+	}, []);
+
 	const filtered = useMemo(() => {
 		const q = query.trim().toLowerCase();
-		if (!q) return moisturizerSections;
-		return moisturizerSections
-			.map(s => ({ title: s.title, data: s.data.filter(i => i.toLowerCase().includes(q)) }))
-			.filter(s => s.data.length > 0);
-	}, [query]);
+		if (!q) return flatProducts;
+		return flatProducts.filter(product => 
+			product.name.toLowerCase().includes(q) || 
+			product.category.toLowerCase().includes(q)
+		);
+	}, [query, flatProducts]);
 
-	const toggle = (item) => setSelected(prev => prev === item ? null : item);
+	const selectProduct = (product) => {
+		setSelected(product);
+	};
+
+	const navigateToDetail = () => {
+		if (selected) {
+			navigation.navigate('ProductDetail', { product: selected });
+		}
+	};
 
 	return (
 		<View style={styles.container}>
@@ -35,26 +58,64 @@ export default function SearchScreen() {
 				clearButtonMode="while-editing"
 			/>
 			{selected && (
-				<View style={styles.selectedBar}>
-					<Typography variant="small" style={styles.selectedBarText}>Valgt: {selected}</Typography>
+				<View style={styles.selectedContainer}>
+					<View style={styles.selectedInfo}>
+						<Ionicons name="checkmark-circle" size={20} color={theme.colors.success || theme.colors.primary} />
+						<View style={styles.selectedTextContainer}>
+							<Typography variant="small" style={styles.selectedProductName}>
+								{selected.name}
+							</Typography>
+							<Typography variant="small" muted style={styles.selectedCategoryText}>
+								{selected.category}
+							</Typography>
+						</View>
+					</View>
+					<TouchableOpacity 
+						style={styles.detailButton}
+						onPress={navigateToDetail}
+						activeOpacity={0.8}
+					>
+						<Typography variant="small" weight="600" style={styles.detailButtonText}>
+							Se Detaljer
+						</Typography>
+						<Ionicons name="arrow-forward" size={16} color="#fff" />
+					</TouchableOpacity>
 				</View>
 			)}
-			<SectionList
-				sections={filtered}
-				keyExtractor={(item) => item}
-				renderSectionHeader={({ section }) => (
-					<Typography variant="h3" style={styles.sectionHeader}>{section.title}</Typography>
-				)}
+			<FlatList
+				data={filtered}
+				keyExtractor={(item) => item.id}
 				renderItem={({ item }) => {
-					const isSel = item === selected;
+					const isSelected = selected?.id === item.id;
 					return (
-						<TouchableOpacity onPress={() => toggle(item)} style={[styles.item, isSel && styles.selectedItem]}>
-							<Typography style={styles.itemText}>{item}</Typography>
+						<TouchableOpacity 
+							onPress={() => selectProduct(item)} 
+							style={[styles.item, isSelected && styles.selectedItem]}
+							activeOpacity={0.7}
+						>
+							<View style={styles.productItem}>
+								<View style={styles.productInfo}>
+									<Typography style={styles.itemText}>{item.name}</Typography>
+									<Typography variant="small" muted style={styles.categoryText}>
+										{item.category}
+									</Typography>
+								</View>
+								<View style={styles.productActions}>
+									{isSelected ? (
+										<Ionicons name="checkmark-circle" size={24} color={theme.colors.success || theme.colors.primary} />
+									) : (
+										<Typography variant="small" muted style={styles.tapHint}>
+											Tryk for at vælge
+										</Typography>
+									)}
+								</View>
+							</View>
 						</TouchableOpacity>
 					);
 				}}
-				stickySectionHeadersEnabled={false}
-				ListEmptyComponent={<Typography muted style={styles.emptyText}>Ingen resultater</Typography>}
+				ListEmptyComponent={
+					<Typography muted style={styles.emptyText}>Ingen resultater</Typography>
+				}
 				showsVerticalScrollIndicator={false}
 			/>
 		</View>
