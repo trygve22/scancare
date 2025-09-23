@@ -93,7 +93,11 @@ For spørgsmål eller problemer, kontakt udviklerteamet eller opret en issue på
 
 ## 🎬 Demo Video
 
-[Link til demo video vil blive tilføjet her]
+
+
+
+https://github.com/user-attachments/assets/7b6d9386-3cb5-4184-9db5-805dd530d590
+
 
 ---
 
