@@ -1,8 +1,8 @@
-# ScanCare 📱
+# ScanCare 
 
 
 
-Before installation, make sure you have:
+Inden installation:
 
 - **Node.js** (v16 eller nyere)
 - **npm** eller **yarn**
@@ -87,9 +87,7 @@ npx expo start --clear
 npx expo start --clear
 ```
 
-## 📞 Support
 
-For spørgsmål eller problemer, kontakt udviklerteamet eller opret en issue på GitHub repository.
 
 ## 🎬 Demo Video
 
@@ -101,6 +99,6 @@ https://github.com/user-attachments/assets/7b6d9386-3cb5-4184-9db5-805dd530d590
 
 ---
 
-**ScanCare** - Din digitale hudpleje assistent 🧴✨
+
 
 
