@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../styles/ThemeContext';
 import Typography from '../components/Typography';
+import { moisturizerSections } from '../data/moisturizers';
+import { resolveProductByBarcode } from '../data/barcodes';
 
 export default function CameraScreen({ navigation }) {
   const { theme } = useTheme();
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState('back');
   const [isScanning, setIsScanning] = useState(false);
+  const [scannedValue, setScannedValue] = useState(null);
   const cameraRef = useRef(null);
 
   useEffect(() => {
@@ -18,39 +21,40 @@ export default function CameraScreen({ navigation }) {
     }
   }, [permission, requestPermission]);
 
-  const takePicture = async () => {
-    if (cameraRef.current && !isScanning) {
-      setIsScanning(true);
-      try {
-        const photo = await cameraRef.current.takePictureAsync({
-          quality: 0.8,
-          base64: false,
-        });
-        
-        // Simulerer scanning af produkt
-        Alert.alert(
-          "Produkt Scannet! 📱",
-          "ScanCare har scannet dit produkt.\n\n🔍 Analyserer ingredienser...\n✅ Produktet ser sikkert ud!",
-          [
-            {
-              text: "Se Detaljer",
-              onPress: () => {
-                // Her kunne du navigere til en produktdetalje side
-                navigation.goBack();
-              }
+  const onBarcodeScanned = useCallback(({ data, type }) => {
+    if (isScanning) return;
+    setIsScanning(true);
+    setScannedValue(data);
+
+    const product = resolveProductByBarcode(data, moisturizerSections);
+    if (product) {
+      Alert.alert(
+        'Produkt fundet',
+        `Stregkode: ${data}\nType: ${type}\n\nÅbner detaljer for: ${product.name}`,
+        [
+          {
+            text: 'Se Detaljer',
+            onPress: () => {
+              navigation.navigate('ProductDetail', { product });
             },
-            {
-              text: "Scan Igen",
-              onPress: () => setIsScanning(false)
-            }
-          ]
-        );
-      } catch (error) {
-        console.error('Error taking picture:', error);
-        setIsScanning(false);
-      }
+          },
+          {
+            text: 'Scan igen',
+            onPress: () => setIsScanning(false),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Ukendt stregkode',
+        `Stregkode: ${data}\nType: ${type}\n\nDette produkt blev ikke fundet i den lokale database.`,
+        [
+          { text: 'Scan igen', onPress: () => setIsScanning(false) },
+          { text: 'Luk', onPress: () => navigation.goBack(), style: 'cancel' },
+        ]
+      );
     }
-  };
+  }, [isScanning, navigation]);
 
   const flipCamera = () => {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
@@ -87,7 +91,15 @@ export default function CameraScreen({ navigation }) {
 
   return (
     <View style={styles.cameraContainer}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+      <CameraView 
+        style={styles.camera}
+        facing={facing}
+        ref={cameraRef}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr', 'ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39']
+        }}
+        onBarcodeScanned={onBarcodeScanned}
+      >
         <View style={styles.overlay}>
           {/* Header */}
           <View style={styles.header}>
@@ -115,13 +127,13 @@ export default function CameraScreen({ navigation }) {
           <View style={styles.bottomControls}>
             <TouchableOpacity 
               style={[styles.scanButton, isScanning && styles.scanButtonDisabled]}
-              onPress={takePicture}
-              disabled={isScanning}
+              onPress={() => setIsScanning(false)}
+              disabled={!isScanning}
             >
               <Ionicons 
-                name={isScanning ? "hourglass" : "scan"} 
-                size={40} 
-                color="white" 
+                name={isScanning ? 'hourglass' : 'checkmark'}
+                size={40}
+                color="white"
               />
             </TouchableOpacity>
           </View>
